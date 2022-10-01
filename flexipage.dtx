@@ -26,7 +26,8 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[2020/10/01]
 %<package>\ProvidesPackage{flexipage}
 %<*package>
-    [2022/05/28 1.0 Easy setup for page geometry]
+%    [2022/07/09 1.00 Easy page geometry]
+    [2022/10/01 1.01 First Page different footer]
 %</package>
 %
 %<*driver>
@@ -75,9 +76,11 @@
 % \providecommand*{\url}{\texttt}
 % \providecommand\lgtarg[1]{{\ttfamily<}\meta{#1}{\ttfamily>}}
 % \GetFileInfo{flexipage.dtx}
+%
 % \title{The \textsf{flexipage} package}
-% \author{Anton Vrba}
-% \date{\fileversion~from \filedate}
+% \author{Anton Vrba\\\small%
+% Home Page: \url{https://github.com/anton-vrba/flexipage} }
+% \date{\fileversion~from \filedate\\}
 %
 %
 % \maketitle
@@ -90,9 +93,9 @@
 % and adding page bleed, if required,
 % \end{abstract}
 %
-% \section{Introduction}
 %
-% The aim is an easy to use the page geometry setup,
+%
+% \noindent The aim is an easy to use the page geometry setup,
 % and allow mid-document changes such as from portrait
 % to landscape, or change the text body width to marginalia width ratio.
 % The philosophy is simple, easy to understand options quickly set up the page geometry:
@@ -188,6 +191,7 @@
 % % headsep =       , % inherits from class
 % % headheight =    , % inherits from class
 % % footskip=       , % inherits from class
+% % extrafirstfoot= , % 0pt, first page extra footer, reduces textheight
 % % show            , % a switch to show frames around the printable areas.
 % % fancyhdrOff     , % Do not use the fancyhdr package
 % % NoFixMargin       % a possible future requirement
@@ -199,7 +203,11 @@
 % \paragraph{Known Issue:} If using the option |show| and the package \textsf{xcolor}
 % is loaded later with options, an error will occur. The reason
 % is that when option |show| is specified the package \textsf{eso-pic} is loaded
-% whch in turns loads \textsf{xcolor} without options.
+% which in turns loads \textsf{xcolor} without options. Remedy, load \textsf{xcolor}
+% with options before loading \textsf{flexipage}
+%
+% If the option |extrafirstfoot| is used, and |show| is used then the frames for the
+% first page do not show the effect of |extrafirstfoot|.
 %
 % \paragraph{Marginalia Position Issue:} When doing mid document changes to |\textwidth|
 % and |\marginparwidth| then |\marginpar{content}| renders the marginalia to the correct
@@ -310,6 +318,8 @@
 \newlength{\flx@printarea}
 \newlength{\flx@outerbleed}
 \newlength{\flx@innerbleed}
+\newlength{\flx@extrafirstfoot}
+\setlength{\flx@extrafirstfoot} {0pt}
 \setlength{\flx@binding}  {9pt}
 \setlength{\flx@inner} {36pt}
 \setlength{\flx@outer} {36pt}
@@ -357,6 +367,7 @@
         headsep .code:n = \setlength{\headsep}{#1},
      headheight .code:n = \setlength{\headheight}{#1},
        footskip .code:n = \setlength{\footskip}{#1},
+ extrafirstfoot .code:n = \setlength{\flx@extrafirstfoot}{#1},
     fancyhdrOff .code:n = \Use@fancyhdrfalse,
         a4paper .code:n = \flx@setpapersize[210][297]{mm},
         a5paper .code:n = \flx@setpapersize[148][210]{mm},
@@ -421,14 +432,21 @@
 
   \setlength{\flx@temp}{\paperheight - \flx@top %
             - \headheight - \headsep -\footskip - \flx@bot - 2\flx@outerbleed}
-  \setlength{\textheight}{\flx@temp}
+  \setlength{\flx@textheigt}{\flx@temp}
+  \setlength{\textheight}{\flx@textheigt-\flx@extrafirstfoot}
+%******************************************************************
 }
 %    \end{macrocode}
 % \end{macro}
 %
 %    \begin{macrocode}
 \flx@setpagevertical
-\setlength{\flx@textheigt}{\textheight}
+\AddToHook{shipout/firstpage}{%
+\global\textheight=\flx@textheigt
+}
+
+
+
 \newlength{\flx@linewidth}
 %    \end{macrocode}
 %

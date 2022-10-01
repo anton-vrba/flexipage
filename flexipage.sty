@@ -25,7 +25,8 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
 \ProvidesPackage{flexipage}
-    [2022/05/28 1.0 Easy setup for page geometry]
+    [2022/10/01 1.01 First Page different footer]
+
 
 \RequirePackage{xparse}   % new LaTeX3 syntax to define macros and environments
 \RequirePackage{l3keys2e} % nice way for option processing
@@ -58,6 +59,8 @@
 \newlength{\flx@printarea}
 \newlength{\flx@outerbleed}
 \newlength{\flx@innerbleed}
+\newlength{\flx@extrafirstfoot}
+\setlength{\flx@extrafirstfoot} {0pt}
 \setlength{\flx@binding}  {9pt}
 \setlength{\flx@inner} {36pt}
 \setlength{\flx@outer} {36pt}
@@ -75,7 +78,7 @@
 \setlength{\flx@paperwidth}{\paperwidth}
 
 \NewDocumentCommand \flx@setpapersize {o o m}{
-\setlength{\flx@paperheight}{#1#3}
+\setlength{\flx@paperheight}{#2#3}
 \setlength{\flx@paperwidth}{#2#3}
 }
 
@@ -99,27 +102,28 @@
         headsep .code:n = \setlength{\headsep}{#1},
      headheight .code:n = \setlength{\headheight}{#1},
        footskip .code:n = \setlength{\footskip}{#1},
+ extrafirstfoot .code:n = \setlength{\flx@extrafirstfoot}{#1},
     fancyhdrOff .code:n = \Use@fancyhdrfalse,
-        a4paper .code:n = \flx@setpapersize[297][210]{mm},
-        a5paper .code:n = \flx@setpapersize[210][148]{mm},
-        b4paper .code:n = \flx@setpapersize[353][250]{mm},
-        b5paper .code:n = \flx@setpapersize[250][176]{mm},
-        c4paper .code:n = \flx@setpapersize[324][229]{mm},
-        c5paper .code:n = \flx@setpapersize[229][162]{mm},
-       b4jpaper .code:n = \flx@setpapersize[364][257]{mm},
-       b5jpaper .code:n = \flx@setpapersize[257][182]{mm},
-    letterpaper .code:n = \flx@setpapersize[11][8.5]{in},
-     legalpaper .code:n = \flx@setpapersize[14][8.5]{in},
- executivepaper .code:n = \flx@setpapersize[10.5][7.25]{in},
-      10x8paper .code:n = \flx@setpapersize[10.0][8.00]{in},
-       US-Trade .code:n = \flx@setpapersize[9.0][6.00]{in},
-    UK-B-Format .code:n = \flx@setpapersize[210][135]{mm},
-    US-B-Format .code:n = \flx@setpapersize[198][129]{mm},
-       UK-Royal .code:n = \flx@setpapersize[234][156]{mm},
-         Quarto .code:n = \flx@setpapersize[12][9.5]{in},
-         Octavo .code:n = \flx@setpapersize[9.0][6.00]{in},
-    CrownQuarto .code:n = \flx@setpapersize[246][189]{mm},
-           Demi .code:n = \flx@setpapersize[216][138]{mm},
+        a4paper .code:n = \flx@setpapersize[210][297]{mm},
+        a5paper .code:n = \flx@setpapersize[148][210]{mm},
+        b4paper .code:n = \flx@setpapersize[250][353]{mm},
+        b5paper .code:n = \flx@setpapersize[176][250]{mm},
+        c4paper .code:n = \flx@setpapersize[229][324]{mm},
+        c5paper .code:n = \flx@setpapersize[162][229]{mm},
+       b4jpaper .code:n = \flx@setpapersize[257][364]{mm},
+       b5jpaper .code:n = \flx@setpapersize[182][257]{mm},
+    letterpaper .code:n = \flx@setpapersize[8.5][11]{in},
+     legalpaper .code:n = \flx@setpapersize[8.5][14]{in},
+ executivepaper .code:n = \flx@setpapersize[7.25][10.5]{in},
+      10x8paper .code:n = \flx@setpapersize[8][10]{in},
+       US-Trade .code:n = \flx@setpapersize[6][9]{in},
+    UK-B-Format .code:n = \flx@setpapersize[135][210]{mm},
+    US-B-Format .code:n = \flx@setpapersize[129][198]{mm},
+       UK-Royal .code:n = \flx@setpapersize[156][234]{mm},
+         Quarto .code:n = \flx@setpapersize[9.5][12]{in},
+         Octavo .code:n = \flx@setpapersize[6][9]{in},
+    CrownQuarto .code:n = \flx@setpapersize[189][246]{mm},
+           Demi .code:n = \flx@setpapersize[138][216]{mm},
 }
 \ProcessKeysOptions { flexiprint }
 
@@ -159,10 +163,14 @@
 
   \setlength{\flx@temp}{\paperheight - \flx@top %
             - \headheight - \headsep -\footskip - \flx@bot - 2\flx@outerbleed}
-  \setlength{\textheight}{\flx@temp}
+  \setlength{\flx@textheigt}{\flx@temp}
+  \setlength{\textheight}{\flx@textheigt-\flx@extrafirstfoot}
 }
 \flx@setpagevertical
-\setlength{\flx@textheigt}{\textheight}
+\AddToHook{shipout/firstpage}{%
+\global\textheight=\flx@textheigt
+}
+
 \newlength{\flx@linewidth}
 
 \NewDocumentCommand \flx@setpage {} {
